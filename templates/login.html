@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Afweb.Id</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #00468b; min-height: 100vh; }
+        .login-container { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 24px; 
+            width: 100%; 
+            max-width: 350px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+        }
+       
+.brand-title { 
+    color: white; 
+    margin-bottom: 0; 
+    margin-left: 10px; 
+}
+        .navbar-dark .navbar-nav .nav-link { color: rgba(255,255,255,.8); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5">
+        <div class="container">
+            <img src="static/img/LOGO -NO BG.png" width="50" alt="Logo AFWEB">
+            <h4 class="brand-title fw-bold mb-0 ms-2">AFWEB<span class="text-primary"> .ID</span></h4>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-store me-1"></i> Kembali ke Toko</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="d-flex align-items-center justify-content-center px-3">
+        <div class="login-container">
+            <h3 class="text-center fw-bold" style="color:#00468b;">AFWEB CODE</h3>
+            <p class="text-center text-muted small">Silakan login untuk mengelola sistem</p>
+            {% if error %}
+            <div class="alert alert-danger text-center small p-2 mb-3">{{ error }}</div>
+            {% endif %}
+            <form method="POST" class="mt-4">
+                <input type="text" name="username" class="form-control mb-3" placeholder="Username" required>
+                <input type="password" name="password" class="form-control mb-3" placeholder="Password" required>
+                <button type="submit" class="btn w-100 fw-bold" style="background:#00468b; color:white;">MASUK</button>
+            </form>
+            <hr>
+            <button class="btn btn-outline-warning w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#modalLamar">LAMAR KERJA</button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalLamar" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5>Formulir Lamaran</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <form id="formLamar" onsubmit="kirimLamar(event)">
+                    <div class="modal-body">
+                        <input type="text" id="l-nama" class="form-control mb-2" placeholder="Nama Lengkap" required>
+                        <input type="email" id="l-email" class="form-control mb-2" placeholder="Alamat Email" required>
+                        <select id="l-posisi" class="form-select mb-2">
+                            <option value="Kasir">Kasir Toko</option>
+                            <option value="Admin">Admin Web</option>
+                        </select>
+                        <input type="text" id="l-kontak" class="form-control mb-2" placeholder="No. WhatsApp" required>
+                        <label class="small">Unggah CV (PDF/Image):</label>
+                        <input type="file" id="l-cv" class="form-control" accept="image/*,.pdf" required>
+                    </div>
+                    <div class="modal-footer"><button type="submit" class="btn btn-primary w-100">KIRIM LAMARAN</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function kirimLamar(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('nama', document.getElementById('l-nama').value);
+            formData.append('email', document.getElementById('l-email').value);
+            formData.append('posisi', document.getElementById('l-posisi').value);
+            formData.append('kontak', document.getElementById('l-kontak').value);
+            formData.append('cv', document.getElementById('l-cv').files[0]);
+
+            const res = await fetch('/api/lamar', { method: 'POST', body: formData });
+            const data = await res.json();
+            alert(data.message);
+            location.reload();
+        }
+    </script>
+     
+<a href="https://wa.me/6281946965540" class="btn-wa-float" target="_blank" title="Hubungi Pengembang">
+    <i class="fab fa-whatsapp"></i>
+</a>
+
+<style>
+    .btn-wa-float {
+        position: fixed;
+        width: 60px;
+        height: 60px;
+        bottom: 20px;
+        right: 20px;
+        background-color: #25d366;
+        color: #FFF;
+        border-radius: 50px;
+        text-align: center;
+        font-size: 30px;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    .btn-wa-float:hover {
+        background-color: #128c7e;
+        color: white;
+        transform: scale(1.1);
+    }
+</style>
+</body>
+</html>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFWEB.ID | Toko</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --biru: #00468b;
+        }
+
+        .btn-biru {
+            background: var(--biru);
+            color: white;
+        }
+
+        .btn-biru:hover {
+            background: #003366;
+            color: white;
+        }
+
+        .card-pembayaran {
+            background: linear-gradient(135deg, #00468b, #002d5a);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .navbar-nav .nav-link {
+            color: white !important;
+            font-size: 0.9rem;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #ffc107 !important;
+        }
+
+        .brand-title {
+            color: white;
+            margin-bottom: 0;
+            margin-left: 10px;
+        }
+
+        /* Style Hero Section */
+        .hero-banner {
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .hero-title {
+            color: var(--biru);
+            font-weight: 800;
+        }
+
+        .btn-wa-float {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            bottom: 20px;
+            right: 20px;
+            background-color: #25d366;
+            color: #FFF;
+            border-radius: 50px;
+            text-align: center;
+            font-size: 30px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-wa-float:hover {
+            background-color: #128c7e;
+            color: white;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+
+<body class="bg-light d-flex flex-column min-vh-100">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <img src="static/img/LOGO -NO BG.png" width="50" alt="Logo AFWEB">
+            <h4 class="brand-title fw-bold mb-0 ms-2">AFWEB<span class="text-primary"> .ID</span></h4>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login"><i class="fas fa-user-shield me-1"></i> Login</a>
+                    </li>
+                    <li class="nav-item me-3">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalLamarIndex"><i
+                                class="fas fa-file-signature me-1"></i> Lamar Kerja</a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-outline-warning btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#modalCart">
+                            <i class="fas fa-shopping-cart"></i> <span id="badge-count" class="badge bg-danger">0</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div id="promo-banner" class="bg-warning text-dark text-center py-2 fw-bold d-none shadow-sm" style="font-size: 1.1rem; letter-spacing: 0.5px;"></div>
+
+    <div class="hero-banner shadow-sm">
+        <div class="container py-5">
+            <div class="row align-items-center">
+                <div class="col-md-7">
+                    <h1 class="hero-title display-5">Selamat Datang di AFWEB STORE</h1>
+                    <p class="lead text-muted">Solusi teknologi terpercaya untuk kebutuhan Anda.
+                        Kami hadir untuk memenuhi kebutuhan Anda melalui produk-produk unggulan dengan kualitas terbaik.
+                        Mulai penjelajahan Anda hari ini dan temukan inovasi yang dirancang khusus untuk mendukung
+                        produktivitas Anda</p>
+                    <a href="#display-produk" class="btn btn-biru rounded-pill px-4 mt-2">Belanja Sekarang <i
+                            class="fas fa-chevron-right ms-2"></i></a>
+                </div>
+                <div class="col-md-5 d-none d-md-block text-center text-muted">
+                    <i class="fas fa-laptop-code fa-10x" style="opacity: 0.1;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold mb-0"><i class="fas fa-boxes me-2 text-primary"></i> Katalog Produk</h4>
+            <div class="col-md-4 col-7">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" id="search-produk" class="form-control border-start-0"
+                        placeholder="Cari produk..." onkeyup="filterProduk()">
+                </div>
+            </div>
+        </div>
+        <div id="display-produk" class="row g-3"></div>
+    </div>
+
+    <div class="modal fade" id="modalCart" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Checkout Pesanan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="cart-list"></div>
+                    <hr>
+                    <label class="small fw-bold mb-1">Metode Pembayaran</label>
+                    <select id="select-metode" class="form-select mb-3" onchange="togglePay(this.value)">
+                        <option value="COD">Bayar di Tempat (COD)</option>
+                        <option value="Transfer">Transfer / QRIS</option>
+                    </select>
+
+                    <div id="info-transfer" class="d-none mb-3 card-pembayaran text-center">
+                        <div id="display-qris"></div>
+                        <p id="display-rekening" class="small mt-2 mb-0" style="white-space: pre-line;"></p>
+
+                        <div class="mt-3 text-start">
+                            <label class="small fw-bold">Upload Bukti Transfer:</label>
+                            <input type="file" id="p-bukti" class="form-control form-control-sm" accept="image/*">
+                        </div>
+                    </div>
+
+                    <input type="text" id="cust-hp" class="form-control mb-2"
+                        placeholder="No. WhatsApp (Contoh: 08123...)">
+                    <textarea id="cust-alamat" class="form-control" placeholder="Alamat Lengkap Pengiriman"></textarea>
+                    <div id="cart-total-container" class="mt-3 p-3 bg-light border rounded">
+                        <h5 class="text-end fw-bold mb-0">Total: <span>Rp 0</span></h5>
+                    </div>
+                </div>
+                <div class="modal-footer"><button onclick="prosesCheckout()" id="btn-beli"
+                        class="btn btn-biru w-100">BELI SEKARANG</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalLamarIndex" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Formulir Lamaran Kerja</h5><button type="button" class="btn-close"
+                        data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formLamar" onsubmit="kirimLamar(event)">
+                    <div class="modal-body">
+                        <input type="text" id="l-nama" class="form-control mb-2" placeholder="Nama Lengkap" required>
+                        <input type="email" id="l-email" class="form-control mb-2" placeholder="Email Aktif" required>
+                        <select id="l-posisi" class="form-select mb-2">
+                            <option value="Kasir">Kasir Toko</option>
+                            <option value="Admin">Admin Web</option>
+                        </select>
+                        <input type="text" id="l-kontak" class="form-control mb-2" placeholder="No. WhatsApp" required>
+                        <label class="small">Unggah CV (PDF/Gambar):</label>
+                        <input type="file" id="l-cv" class="form-control" accept="image/*,.pdf" required>
+                    </div>
+                    <div class="modal-footer"><button type="submit" id="btn-submit-lamar"
+                            class="btn btn-primary w-100">KIRIM LAMARAN</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalZoom" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-header border-0 pb-0 justify-content-end">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="background-color: white; padding: 10px; border-radius: 50%; opacity: 0.9; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></button>
+                </div>
+                <div class="modal-body text-center p-0 mt-2">
+                    <img id="zoom-img" src="" class="img-fluid rounded shadow-lg" style="max-height: 85vh; object-fit: contain;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let keranjang = [];
+        let allProduk = [];
+        let globalDiskon = 0;
+
+        window.onload = () => {
+            ambilProduk();
+            muatSettingPembayaran();
+        };
+
+        function zoomImage(productId, startIndex = 0) {
+            const p = allProduk.find(x => x.id === productId);
+            if(!p) return;
+            
+            let arr = [];
+            try {
+                arr = JSON.parse(p.foto);
+                if(!Array.isArray(arr)) arr = [p.foto];
+            } catch(e) {
+                arr = [p.foto];
+            }
+            
+            const modalBody = document.querySelector('#modalZoom .modal-body');
+            if (arr.length > 1) {
+                let indicators = arr.map((_, i) => `<button type="button" data-bs-target="#zoomCarousel" data-bs-slide-to="${i}" class="${i===startIndex?'active':''}"></button>`).join('');
+                let items = arr.map((src, i) => `<div class="carousel-item ${i===startIndex?'active':''}"><img src="${src}" class="d-block w-100 mx-auto rounded shadow-lg" style="max-height: 85vh; object-fit: contain;"></div>`).join('');
+                
+                modalBody.innerHTML = `<div id="zoomCarousel" class="carousel slide" data-bs-ride="false">
+                    <div class="carousel-indicators mb-0 pb-0" style="bottom: 0;">${indicators}</div>
+                    <div class="carousel-inner rounded">${items}</div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#zoomCarousel" data-bs-slide="prev">
+                        <i class="fas fa-chevron-left" style="font-size: 2rem; color: white; background: rgba(0,0,0,0.5); padding: 10px 14px; border-radius: 50%;"></i>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#zoomCarousel" data-bs-slide="next">
+                        <i class="fas fa-chevron-right" style="font-size: 2rem; color: white; background: rgba(0,0,0,0.5); padding: 10px 14px; border-radius: 50%;"></i>
+                    </button>
+                </div>`;
+            } else {
+                modalBody.innerHTML = `<img src="${arr[0]}" class="img-fluid rounded shadow-lg" style="max-height: 85vh; object-fit: contain;">`;
+            }
+            
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalZoom')).show();
+        }
+
+        function togglePay(val) {
+            document.getElementById('info-transfer').classList.toggle('d-none', val === 'COD');
+        }
+
+        async function muatSettingPembayaran() {
+            try {
+                const res = await fetch('/api/settings/pembayaran');
+                const data = await res.json();
+                document.getElementById('display-rekening').innerText = data.rekening || "Hubungi admin untuk detail rekening.";
+                if (data.qris_path) {
+                    document.getElementById('display-qris').innerHTML = `<img src="${data.qris_path}" class="bg-white p-2 rounded mb-2" style="max-width: 180px;">`;
+                }
+                globalDiskon = data.diskon || 0;
+                if(data.banner_aktif == 1 && data.banner_text) {
+                    const b = document.getElementById('promo-banner');
+                    b.innerText = data.banner_text;
+                    b.classList.remove('d-none');
+                }
+                if(allProduk.length > 0) renderProduk(allProduk);
+            } catch (e) { console.error("Gagal memuat setting pembayaran"); }
+        }
+
+        async function ambilProduk() {
+            const res = await fetch('/api/barang');
+            allProduk = await res.json();
+            renderProduk(allProduk);
+        }
+
+        function renderProduk(data) {
+            const container = document.getElementById('display-produk');
+            if (data.length === 0) {
+                container.innerHTML = `<div class="col-12 text-center py-5 text-muted"><p>Produk tidak ditemukan.</p></div>`;
+                return;
+            }
+            container.innerHTML = data.map(p => {
+                let imgHtml = '';
+                try {
+                    let arr = JSON.parse(p.foto);
+                    if(Array.isArray(arr) && arr.length > 1) {
+                        let indicators = arr.map((_, i) => `<button type="button" data-bs-target="#carousel-${p.id}" data-bs-slide-to="${i}" class="${i===0?'active':''}"></button>`).join('');
+                        let items = arr.map((src, i) => `<div class="carousel-item ${i===0?'active':''}"><img src="${src}" onclick="zoomImage(${p.id}, ${i})" class="d-block w-100 rounded" style="height:140px; object-fit:cover; cursor: zoom-in;"></div>`).join('');
+                        imgHtml = `<div id="carousel-${p.id}" class="carousel slide mb-2" data-bs-ride="carousel" data-bs-interval="2500">
+                                    <div class="carousel-indicators mb-0 pb-0" style="bottom: 0;">${indicators}</div>
+                                    <div class="carousel-inner rounded">${items}</div>
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#carousel-${p.id}" data-bs-slide="prev">
+                                        <i class="fas fa-chevron-left" style="font-size: 1.2rem; color: white; background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 50%;"></i>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#carousel-${p.id}" data-bs-slide="next">
+                                        <i class="fas fa-chevron-right" style="font-size: 1.2rem; color: white; background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 50%;"></i>
+                                    </button>
+                                   </div>`;
+                    } else {
+                        let imgSrc = Array.isArray(arr) && arr.length > 0 ? arr[0] : '';
+                        imgHtml = `<img src="${imgSrc}" onclick="zoomImage(${p.id}, 0)" style="height:140px; object-fit:cover; cursor: zoom-in;" class="rounded mb-2 w-100">`;
+                    }
+                } catch(e) { 
+                    imgHtml = `<img src="${p.foto}" onclick="zoomImage(${p.id}, 0)" style="height:140px; object-fit:cover; cursor: zoom-in;" class="rounded mb-2 w-100">`;
+                }
+                
+                let cPrice = p.harga;
+                let priceHtml = `<span class="text-primary fw-bold small">Rp${cPrice.toLocaleString()}</span>`;
+                if(globalDiskon > 0) {
+                    cPrice = p.harga - (p.harga * globalDiskon / 100);
+                    priceHtml = `<span class="text-muted text-decoration-line-through small me-1" style="font-size: 0.75rem;">Rp${p.harga.toLocaleString()}</span><span class="text-danger fw-bold small">Rp${cPrice.toLocaleString()}</span>`;
+                }
+
+                return `<div class="col-6 col-md-3 d-flex flex-column">
+                    <div class="card h-100 border-0 shadow-sm text-center p-2 d-flex flex-column">
+                        ${imgHtml}
+                        <b class="small d-block text-truncate mt-1">${p.nama}</b>
+                        <div class="mt-auto">
+                            ${priceHtml}
+                            <button onclick="tambahKeKeranjang(${p.id}, '${p.nama}', ${p.harga})" class="btn btn-biru btn-sm mt-2 w-100">+ Beli</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            // Inisialisasi carousel agar otomatis bergeser (auto-play)
+            container.querySelectorAll('.carousel').forEach(c => {
+                new bootstrap.Carousel(c, {
+                    interval: 2500,
+                    ride: 'carousel'
+                });
+            });
+        }
+
+        function filterProduk() {
+            const keyword = document.getElementById('search-produk').value.toLowerCase();
+            const filtered = allProduk.filter(p => p.nama.toLowerCase().includes(keyword));
+            renderProduk(filtered);
+        }
+
+        function tambahKeKeranjang(id, nama, harga) {
+            const idx = keranjang.findIndex(k => k.id === id);
+            if (idx > -1) keranjang[idx].qty++; else keranjang.push({ id, nama, harga, qty: 1 });
+            updateCart();
+            alert("Berhasil ditambah ke keranjang!");
+        }
+
+        function updateCart() {
+            document.getElementById('badge-count').innerText = keranjang.reduce((a, b) => a + b.qty, 0);
+            let tOri = 0;
+            const listContainer = document.getElementById('cart-list');
+            const totalContainer = document.getElementById('cart-total-container');
+
+            if (keranjang.length === 0) {
+                listContainer.innerHTML = '<p class="text-center text-muted small">Keranjang kosong</p>';
+                totalContainer.innerHTML = '<h5 class="text-end fw-bold mb-0">Total: <span>Rp 0</span></h5>';
+            } else {
+                listContainer.innerHTML = keranjang.map((k, index) => {
+                    tOri += (k.harga * k.qty);
+                    return `
+                        <div class="d-flex justify-content-between align-items-center small border-bottom mb-1 pb-1">
+                            <span>${k.nama} x${k.qty}</span>
+                            <div class="d-flex align-items-center">
+                                <b class="me-2">Rp${(k.harga * k.qty).toLocaleString()}</b>
+                                <button onclick="hapusDariKeranjang(${index})" class="btn btn-sm text-danger p-0"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        </div>`;
+                }).join('');
+                
+                let tDiskon = 0;
+                if(globalDiskon > 0) tDiskon = tOri * (globalDiskon / 100);
+                let tAkhir = tOri - tDiskon;
+
+                if (globalDiskon > 0) {
+                    totalContainer.innerHTML = `
+                        <div class="d-flex justify-content-between small text-muted mb-1 w-100">
+                            <span>Total Harga Asli:</span>
+                            <span class="text-decoration-line-through">Rp ${tOri.toLocaleString()}</span>
+                        </div>
+                        <div class="d-flex justify-content-between small text-danger mb-2 border-bottom pb-2 w-100">
+                            <span>Diskon (${globalDiskon}%):</span>
+                            <span>- Rp ${tDiskon.toLocaleString()}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <span class="fw-bold" style="font-size: 1.1rem;">Total Bayar:</span>
+                            <h5 class="text-primary fw-bold mb-0">Rp ${tAkhir.toLocaleString()}</h5>
+                        </div>`;
+                } else {
+                    totalContainer.innerHTML = `<h5 class="text-end fw-bold mb-0">Total: <span class="text-primary">Rp ${tAkhir.toLocaleString()}</span></h5>`;
+                }
+            }
+        }
+
+        function hapusDariKeranjang(index) {
+            keranjang.splice(index, 1);
+            updateCart();
+        }
+
+        async function prosesCheckout() {
+            const almt = document.getElementById('cust-alamat').value;
+            const hp = document.getElementById('cust-hp').value;
+            const metode = document.getElementById('select-metode').value;
+            const fileBukti = document.getElementById('p-bukti').files[0];
+
+            if (!almt || !hp || keranjang.length === 0) return alert("Mohon lengkapi data pesanan!");
+            if (metode === 'Transfer' && !fileBukti) return alert("Mohon unggah bukti pembayaran!");
+
+            const btn = document.getElementById('btn-beli');
+            btn.disabled = true; btn.innerText = "Memproses...";
+
+            const formData = new FormData();
+            formData.append('items', JSON.stringify(keranjang));
+            formData.append('metode', metode);
+            let totalOri = keranjang.reduce((a, b) => a + (b.harga * b.qty), 0);
+            let totalAkhir = totalOri - (totalOri * (globalDiskon / 100));
+            formData.append('total', totalAkhir);
+            formData.append('alamat', almt);
+            formData.append('no_hp', hp);
+            if (fileBukti) formData.append('bukti', fileBukti);
+
+            try {
+                const res = await fetch('/api/checkout', { method: 'POST', body: formData });
+                if (res.ok) {
+                    alert("Pesanan berhasil dikirim! Silakan tunggu konfirmasi admin.");
+                    location.reload();
+                }
+            } catch (e) { alert("Gagal memproses pesanan."); }
+            finally { btn.disabled = false; btn.innerText = "BELI SEKARANG"; }
+        }
+
+        async function kirimLamar(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-lamar');
+            btn.disabled = true; btn.innerText = "Mengirim...";
+            const formData = new FormData();
+            formData.append('nama', document.getElementById('l-nama').value);
+            formData.append('email', document.getElementById('l-email').value);
+            formData.append('posisi', document.getElementById('l-posisi').value);
+            formData.append('kontak', document.getElementById('l-kontak').value);
+            formData.append('cv', document.getElementById('l-cv').files[0]);
+            try {
+                const res = await fetch('/api/lamar', { method: 'POST', body: formData });
+                const data = await res.json();
+                alert(data.message);
+                if (data.status === "success") location.reload();
+            } catch (err) { alert("Terjadi kesalahan sistem."); }
+            finally { btn.disabled = false; btn.innerText = "KIRIM LAMARAN"; }
+        }
+    </script>
+
+    <footer class="bg-dark text-white pt-4 pb-2 mt-auto border-top border-secondary text-center">
+        <p class="mb-1">© 2026 AFWEB CODE. All Rights Reserved.</p>
+        <p>Dikembangkan oleh: <br><a href="https://www.instagram.com/afweb.id" target="_blank"
+                class="text-warning text-decoration-none fw-bold">afweb.id</a></p>
+    </footer>
+
+    <script type="text/javascript">
+        var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+        (function () {
+            var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+            s1.async = true;
+            s1.src = 'https://tawk.to/chat/69e4d1426936c61c38746a9d/1jmit2rfv';
+            s1.charset = 'UTF-8';
+            s1.setAttribute('crossorigin', '*');
+            s0.parentNode.insertBefore(s1, s0);
+        })();
+    </script>
+    <script type="text/javascript">
+        var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+        (function () {
+            var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+            s1.async = true;
+            s1.src = 'https://embed.tawk.to/69e4d1426936c61c38746a9d/1jmit2rfv';
+            s1.charset = 'UTF-8';
+            s1.setAttribute('crossorigin', '*');
+            s0.parentNode.insertBefore(s1, s0);
+        })();
+    </script>
+</body>
+
+</html>

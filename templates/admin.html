@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>AFWEB.ID - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --sidebar-bg: #002d5a;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: #f0f2f5;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #sidebar, .btn-wa-float, #sidebar-toggle { display: none !important; }
+            #riwayat, #riwayat * { visibility: visible; }
+            #riwayat { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; }
+            .btn, .dropdown, #rekap-display-area .btn-close { display: none !important; }
+        }
+
+        /* CSS Sidebar & Animasi */
+        #sidebar {
+            min-width: 250px;
+            max-width: 250px;
+            background: var(--sidebar-bg);
+            color: white;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        /* State Sidebar Kecil (Collapsed) */
+        #sidebar.collapsed {
+            min-width: 80px;
+            max-width: 80px;
+        }
+
+        #sidebar.collapsed .brand-title,
+        #sidebar.collapsed .nav-link span,
+        #sidebar.collapsed .user-info-text,
+        #sidebar.collapsed .badge {
+            display: none;
+        }
+
+        #sidebar.collapsed .nav-link {
+            text-align: center;
+            padding: 15px 0;
+        }
+
+        #sidebar.collapsed .nav-link i {
+            margin: 0 !important;
+            font-size: 1.2rem;
+        }
+
+        #sidebar.collapsed .p-4 {
+            padding: 1rem !important;
+        }
+
+        /* Penyesuaian Logo saat Sidebar Kecil */
+        #sidebar.collapsed .brand-wrapper {
+            justify-content: center !important;
+        }
+
+        #sidebar.collapsed #logo-main {
+            margin-right: 0 !important;
+            width: 40px;
+        }
+
+        /* Styling Navigasi */
+        .nav-link {
+            color: #adb5bd;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            white-space: nowrap;
+            display: block;
+            text-decoration: none;
+        }
+
+        .nav-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-link.active {
+            background: #00468b;
+            color: white;
+            border-left: 4px solid #ffc107;
+        }
+
+        /* Styling Konten Utama */
+        #content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+            flex: 1;
+        }
+
+        .badge-notif {
+            background: #ffc107;
+            color: #000;
+            padding: 2px 7px;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        /* Toggle Button Style */
+        #sidebar-toggle {
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: white;
+            transition: 0.2s;
+        }
+
+        #sidebar-toggle:hover {
+            color: #ffc107;
+        }
+
+        /* Styling Kartu & Elemen UI */
+        .card-order {
+            border-radius: 12px;
+            transition: transform 0.2s;
+            border: none;
+        }
+
+        .card-order:hover {
+            transform: translateY(-3px);
+        }
+
+        .btn-wa-float {
+            position: fixed;
+            width: 50px;
+            height: 50px;
+            bottom: 20px;
+            right: 20px;
+            background-color: #25d366;
+            color: #FFF;
+            border-radius: 50px;
+            text-align: center;
+            font-size: 25px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-wa-float:hover {
+            background-color: #128c7e;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .card-custom {
+            background: white;
+            border-radius: 15px;
+            border: none;
+        }
+
+        .rekap-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 5px solid #00468b;
+        }
+
+        .dash-rekap-card {
+            background: #fff;
+            border-radius: 12px;
+            border: none;
+            padding: 15px;
+            height: 100%;
+            transition: 0.3s;
+        }
+
+        .dash-rekap-card:hover {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="sidebar">
+        <div class="p-4 border-bottom border-secondary">
+
+            <div class="text-center user-info-wrapper">
+                <div class="d-flex align-items-center justify-content-center brand-wrapper mt-2">
+                    <img src="static/img/LOGO -NO BG.png" width="35" alt="Logo AFWEB" id="logo-main" class="me-2">
+                    <h4 class="brand-title fw-bold m-0" style="white-space: nowrap;">AFWEB<span class="text-primary">
+                            .ID</span></h4>
+                </div>
+
+                <div class="user-info-text text-white mt-2" style="font-size: 14px; opacity: 0.8;">{% if username %}{{
+                    username }}{% else %}Admin{% endif %}</div>
+                <div class="badge bg-warning text-dark mt-2" style="font-size: 10px; letter-spacing: 0.5px;">{{ role |
+                    upper }} ACCESS</div>
+                <div class="d-flex justify-content-end mb-2">
+                    <i class="fas fa-bars" id="sidebar-toggle" onclick="toggleSidebar()"></i>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav flex-column mt-2">
+            <a href="/logout" class="nav-link text-danger border-bottom border-secondary mb-2"
+                style="background: rgba(220, 53, 69, 0.05);"><i class="fas fa-power-off me-2"></i>
+                <span>Keluar</span></a>
+
+
+            {% if role == 'admin' %}
+            <div class="nav-link active" onclick="showPage('dash', this)"><i class="fas fa-chart-line me-2"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-link" onclick="showPage('stok', this)"><i class="fas fa-box me-2"></i>
+                <span>Inventaris</span>
+            </div>
+            <div class="nav-link" onclick="showPage('pelamar-page', this)"><i class="fas fa-user-tie me-2"></i>
+                <span>Pelamar</span> <span id="badge-pelamar" class="badge-notif d-none">0</span>
+            </div>
+            <div class="nav-link" onclick="showPage('biodata-page', this)"><i class="fas fa-id-card me-2"></i>
+                <span>Biodata Karyawan</span>
+            </div>
+            <div class="nav-link" onclick="showPage('user-page', this)"><i class="fas fa-users-cog me-2"></i>
+                <span>Kelola User</span>
+            </div>
+            <div class="nav-link" onclick="showPage('pay-settings', this)"><i class="fas fa-store me-2"></i>
+                <span>Pengaturan Toko</span>
+            </div>
+            {% endif %}
+            <div class="nav-link {% if role == 'kasir' %}active{% endif %}" onclick="showPage('antrean', this)"><i
+                    class="fas fa-bell me-2"></i> <span>Pesanan</span> <span id="badge-antrean"
+                    class="badge-notif d-none">0</span></div>
+            <div class="nav-link" onclick="showPage('riwayat', this)"><i class="fas fa-history me-2"></i>
+                <span>Laporan</span>
+            </div>
+        </nav>
+    </div>
+
+    <div id="content">
+        {% if role == 'admin' %}
+        <div id="dash" class="page-section active">
+            <h4 class="fw-bold mb-4">Ringkasan Penjualan & Stok</h4>
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="card card-custom p-3 shadow-sm text-center">
+                        <h6 class="text-muted fw-bold small">TOTAL OMZET</h6>
+                        <h4 class="fw-bold text-primary mb-0" id="text-omzet">Rp 0</h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-custom p-3 shadow-sm text-center">
+                        <h6 class="text-muted fw-bold small">HARI INI</h6>
+                        <h4 class="fw-bold text-success mb-0" id="omzet-hari">Rp 0</h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-custom p-3 shadow-sm text-center">
+                        <h6 class="text-muted fw-bold small">BULAN INI</h6>
+                        <h4 class="fw-bold text-info mb-0" id="omzet-bulan">Rp 0</h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-custom p-3 shadow-sm text-center border-start border-4 border-warning">
+                        <h6 class="text-muted fw-bold small text-uppercase">Nilai Aset Stok</h6>
+                        <h4 class="fw-bold text-warning mb-0" id="total-aset-stok">Rp 0</h4>
+                        <small id="notif-stok-low" class="text-danger fw-bold mt-1"></small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="dash-rekap-card shadow-sm border-start border-4 border-success">
+                        <h6 class="fw-bold small text-success"><i class="fas fa-calendar-day me-2"></i>DETAIL HARIAN
+                        </h6>
+                        <div id="dash-rekap-hari" class="small mt-2 text-muted">Memuat data...</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="dash-rekap-card shadow-sm border-start border-4 border-info">
+                        <h6 class="fw-bold small text-info"><i class="fas fa-calendar-alt me-2"></i>DETAIL BULANAN</h6>
+                        <div id="dash-rekap-bulan" class="small mt-2 text-muted">Memuat data...</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="dash-rekap-card shadow-sm border-start border-4 border-primary">
+                        <h6 class="fw-bold small text-primary"><i class="fas fa-boxes me-2"></i>DETAIL INVENTARIS</h6>
+                        <div id="dash-rekap-stok" class="small mt-2 text-muted">Memuat data...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card border-0 p-3 shadow-sm card-custom"><canvas id="incomeChart" height="80"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="stok" class="page-section">
+            <h4 class="fw-bold mb-4">Stok Barang</h4>
+            <div class="card border-0 p-4 shadow-sm mb-3 card-custom">
+                <div class="row g-2">
+                    <div class="col-md-3"><input id="inp-nama" class="form-control" placeholder="Nama Barang"></div>
+                    <div class="col-md-2"><input id="inp-stok" class="form-control" type="number" placeholder="Stok">
+                    </div>
+                    <div class="col-md-2"><input id="inp-harga" class="form-control" type="number" placeholder="Harga">
+                    </div>
+                    <div class="col-md-3"><input id="inp-foto" type="file" class="form-control" multiple></div>
+                    <div class="col-md-2"><button onclick="tambahBarang()" class="btn btn-primary w-100">Tambah</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card border-0 p-4 shadow-sm card-custom">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Foto</th>
+                            <th>Nama</th>
+                            <th>Stok</th>
+                            <th>Harga</th>
+                            <th class="text-end">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-admin-barang"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="pelamar-page" class="page-section">
+            <h4 class="fw-bold mb-4">Daftar Pelamar Kerja</h4>
+            <div class="card border-0 p-4 shadow-sm card-custom">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Biodata & Kontak</th>
+                                <th>Posisi</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-pelamar"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="biodata-page" class="page-section">
+            <h4 class="fw-bold mb-4">Daftar Biodata Karyawan</h4>
+            <div class="card border-0 p-4 shadow-sm card-custom">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th class="text-nowrap">Aksi</th>
+                                <th class="text-nowrap">Nama Lengkap</th>
+                                <th class="text-nowrap">NIK</th>
+                                <th class="text-nowrap">Tempat, Tgl Lahir</th>
+                                <th class="text-nowrap">Agama</th>
+                                <th class="text-nowrap">Kewarganegaraan</th>
+                                <th class="text-nowrap">Status Kawin</th>
+                                <th class="text-nowrap">No. Telpon / WA</th>
+                                <th class="text-nowrap">Alamat Lengkap</th>
+                                <th class="text-nowrap">Pendidikan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-biodata"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="user-page" class="page-section">
+            <h4 class="fw-bold mb-4">Kelola User</h4>
+            <div class="card border-0 p-4 shadow-sm mb-4 card-custom">
+                <div class="row g-2">
+                    <div class="col-md-4"><input id="u-name" class="form-control" placeholder="Username"></div>
+                    <div class="col-md-4"><input id="u-pass" class="form-control" type="password"
+                            placeholder="Password"></div>
+                    <div class="col-md-2"><select id="u-role" class="form-select">
+                            <option value="admin">Admin</option>
+                            <option value="kasir">Kasir</option>
+                        </select></div>
+                    <div class="col-md-2"><button onclick="tambahUser()" class="btn btn-primary w-100">Simpan</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card border-0 p-4 shadow-sm card-custom">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-users"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="pay-settings" class="page-section">
+            <h4 class="fw-bold mb-4">Pengaturan Toko & Pembayaran</h4>
+            <div class="card border-0 p-4 shadow-sm mb-4 card-custom" style="max-width: 700px;">
+                <h6 class="fw-bold text-primary mb-3"><i class="fas fa-tags"></i> Promo & Diskon</h6>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold">Status Banner Promo</label>
+                        <select id="set-banner-aktif" class="form-select">
+                            <option value="0">Tidak Aktif</option>
+                            <option value="1">Aktif</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold">Diskon Global (%)</label>
+                        <input type="number" id="set-diskon" class="form-control" placeholder="0" min="0" max="100">
+                    </div>
+                    <div class="col-12">
+                        <label class="fw-bold">Teks Banner Promo</label>
+                        <input type="text" id="set-banner-text" class="form-control" placeholder="Contoh: Promo 12.12 Diskon 10% Semua Item!">
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <h6 class="fw-bold text-primary mb-3"><i class="fas fa-money-check-alt"></i> Info Pembayaran</h6>
+                <div class="mb-3">
+                    <label class="fw-bold">Instruksi Pembayaran (Rekening dll)</label>
+                    <textarea id="set-rekening" class="form-control" rows="4"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">Update QRIS</label>
+                    <input type="file" id="set-qris" class="form-control">
+                    <div id="qris-preview-container" class="mt-2 text-center"></div>
+                </div>
+                <button onclick="simpanPaySettings()" class="btn btn-primary w-100 mt-2">Simpan Perubahan Toko</button>
+            <div class="card border-0 p-4 shadow-sm mb-4 card-custom" style="max-width: 700px;">
+                <h6 class="fw-bold text-danger mb-3"><i class="fas fa-shield-alt"></i> Sistem & Backup</h6>
+                <div class="mb-3">
+                    <a href="/api/backup" class="btn btn-success w-100 mb-3"><i class="fas fa-download me-2"></i> Download Database (Backup)</a>
+                    <hr>
+                    <h6 class="fw-bold mb-2 text-danger">Bersihkan Data Aplikasi</h6>
+                    <p class="small text-muted mb-2">Pilih data yang ingin dikosongkan. Pengaturan toko dan Admin akan tetap aman.</p>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="clean-pesanan" checked>
+                        <label class="form-check-label text-muted small">Semua Laporan Transaksi / Pesanan</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="clean-pelamar" checked>
+                        <label class="form-check-label text-muted small">Semua Data Pelamar & Biodata</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="clean-barang">
+                        <label class="form-check-label text-muted small">Semua Data Stok Barang (Kosongkan Katalog Toko)</label>
+                    </div>
+                    <button onclick="cleanApp()" class="btn btn-outline-danger w-100"><i class="fas fa-trash-alt me-2"></i> Bersihkan Data Terpilih</button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div id="antrean" class="page-section {% if role == 'kasir' %}active{% endif %}">
+            <h4 class="fw-bold mb-4">Antrean Pesanan Masuk</h4>
+            <div id="list-antrean" class="row g-3"></div>
+        </div>
+
+        <div id="riwayat" class="page-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold m-0">Laporan Transaksi</h4>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary btn-sm" onclick="window.print()"><i class="fas fa-print me-1"></i> Cetak Laporan</button>
+                    <div class="dropdown">
+                        <button class="btn btn-dark btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-eye me-1"></i> Lihat Rekap
+                        </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="tampilkanRekap('hari')">Rekap Harian</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="tampilkanRekap('bulan')">Rekap Bulanan</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="tampilkanRekap('stok')">Rekap Inventaris</a></li>
+                    </ul>
+                </div>
+                </div>
+            </div>
+            <div id="rekap-display-area" class="mb-4 d-none">
+                <div class="rekap-box shadow-sm">
+                    <div class="d-flex justify-content-between">
+                        <h5 id="rekap-title" class="fw-bold text-primary">Rekap</h5>
+                        <button class="btn-close"
+                            onclick="document.getElementById('rekap-display-area').classList.add('d-none')"></button>
+                    </div>
+                    <div id="rekap-body" class="mt-2"></div>
+                </div>
+            </div>
+            <div class="card border-0 p-4 shadow-sm card-custom">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Item</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-rekap"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer class="mt-auto pt-4 pb-2 text-center border-top">
+            <p class="mb-0 small text-muted">© 2026 AFWEB CODE | Build by
+                <a href="https://www.instagram.com/afweb.id" target="_blank"
+                    class="text-primary text-decoration-none fw-bold">afweb.id</a>
+            </p>
+        </footer>
+    </div>
+
+    <a href="https://wa.me/6281946965540" class="btn-wa-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <div class="modal fade" id="modalEdit" tabindex="-1">
+        <div class="modal-dialog">
+            <form id="formEdit" class="modal-content">
+                <div class="modal-header">
+                    <h5>Edit Barang</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="edit-id">
+                    <div class="mb-3"><label>Nama Barang</label><input type="text" name="nama" id="edit-nama"
+                            class="form-control"></div>
+                    <div class="mb-3"><label>Stok</label><input type="number" name="stok" id="edit-stok"
+                            class="form-control"></div>
+                    <div class="mb-3"><label>Harga</label><input type="number" name="harga" id="edit-harga"
+                            class="form-control"></div>
+                    <div class="mb-3"><label>Foto (Kosongkan jika tidak ganti)</label><input type="file" name="foto[]" multiple
+                            class="form-control"></div>
+                </div>
+                <div class="modal-footer"><button type="button" onclick="simpanEdit()" class="btn btn-primary">Simpan
+                        Perubahan</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalEditUser" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Edit User</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit-u-id">
+                    <div class="mb-3"><label>Username</label><input type="text" id="edit-u-name" class="form-control">
+                    </div>
+                    <div class="mb-3"><label>Password Baru (Kosongkan jika tidak ganti)</label><input type="password"
+                            id="edit-u-pass" class="form-control"></div>
+                    <div class="mb-3"><label>Role</label><select id="edit-u-role" class="form-select">
+                            <option value="admin">Admin</option>
+                            <option value="kasir">Kasir</option>
+                        </select></div>
+                </div>
+                <div class="modal-footer"><button type="button" onclick="simpanEditUser()"
+                        class="btn btn-primary">Simpan</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalBiodata" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Detail Biodata</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-1"><strong>Nama Lengkap:</strong> <span id="bio-nama_lengkap"></span></p>
+                    <p class="mb-1"><strong>Tempat, Tgl Lahir:</strong> <span id="bio-tempat"></span>, <span
+                            id="bio-tgl"></span></p>
+                    <p class="mb-1"><strong>Agama:</strong> <span id="bio-agama"></span></p>
+                    <p class="mb-1"><strong>Kewarganegaraan:</strong> <span id="bio-kewarganegaraan"></span></p>
+                    <p class="mb-1"><strong>Status Kawin:</strong> <span id="bio-status_kawin"></span></p>
+                    <p class="mb-1"><strong>No. Telpon:</strong> <span id="bio-no_telp"></span></p>
+                    <p class="mb-1"><strong>NIK:</strong> <span id="bio-nik"></span></p>
+                    <p class="mb-1"><strong>Alamat:</strong> <span id="bio-alamat"></span></p>
+                    <p class="mb-3"><strong>Pendidikan:</strong> <span id="bio-pendidikan"></span></p>
+                    <hr>
+                    <h6 class="fw-bold">Foto KTP</h6>
+                    <div id="bio-ktp" class="mb-3 text-center"></div>
+                    <h6 class="fw-bold">Foto Wajah</h6>
+                    <div id="bio-wajah" class="mb-3 text-center"></div>
+                    <h6 class="fw-bold">Ijazah Terakhir</h6>
+                    <div id="bio-ijazah" class="text-center"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // JS BARU: Toggle Sidebar
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        // Kode JavaScript Anda yang sudah ada
+        let chart;
+        const currentRole = "{{ role }}";
+        let editModal, userEditModal, biodataModal;
+        let globalDataRekap = { riwayat: [], total: 0 };
+        let globalDataBarang = [];
+
+        window.onload = () => {
+            editModal = new bootstrap.Modal(document.getElementById('modalEdit'));
+            userEditModal = new bootstrap.Modal(document.getElementById('modalEditUser'));
+            biodataModal = new bootstrap.Modal(document.getElementById('modalBiodata'));
+            loadData();
+            if (currentRole === 'admin') { loadUsers(); loadPaySettings(); }
+        };
+
+        function showPage(id, el) {
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(id);
+            if (target) target.classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        async function loadData() {
+            try {
+                const resB = await fetch('/api/barang');
+                const dataB = await resB.json();
+                globalDataBarang = dataB;
+
+                if (currentRole === 'admin') {
+                    const getImgSrc = (fotoStr) => {
+                        try {
+                            let arr = JSON.parse(fotoStr);
+                            return Array.isArray(arr) && arr.length > 0 ? arr[0] : fotoStr;
+                        } catch(e) {
+                            return fotoStr;
+                        }
+                    };
+                    document.getElementById('list-admin-barang').innerHTML = dataB.map(p => `<tr><td><img src="${getImgSrc(p.foto)}" width="40" height="40" class="rounded" style="object-fit:cover"></td><td>${p.nama}</td><td>${p.stok}</td><td>Rp${p.harga.toLocaleString()}</td><td class="text-end"><button onclick='openEditModal(${JSON.stringify(p)})' class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button> <button onclick="hapusBarang(${p.id})" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button></td></tr>`).join('');
+
+                    let totalAset = dataB.reduce((sum, item) => sum + (item.harga * item.stok), 0);
+                    let totalQty = dataB.reduce((sum, item) => sum + parseInt(item.stok), 0);
+                    let stokLow = dataB.filter(item => item.stok < 5).length;
+                    document.getElementById('total-aset-stok').innerText = 'Rp ' + totalAset.toLocaleString();
+                    document.getElementById('notif-stok-low').innerText = stokLow > 0 ? stokLow + ' Item Stok Menipis!' : 'Stok Aman';
+                    document.getElementById('dash-rekap-stok').innerHTML = `Jenis: <b>${dataB.length}</b> | Qty: <b>${totalQty}</b><br>Nilai Aset: <b>Rp ${totalAset.toLocaleString()}</b>`;
+
+                    const resP = await fetch('/api/pelamar');
+                    const dataP = await resP.json();
+                    const pendingP = dataP.filter(x => x.status === 'Pending').length;
+                    const bP = document.getElementById('badge-pelamar');
+                    if (bP) { bP.innerText = pendingP; pendingP > 0 ? bP.classList.remove('d-none') : bP.classList.add('d-none'); }
+
+                    document.getElementById('list-pelamar').innerHTML = dataP.map(p => `
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-uppercase">${p.nama}</div>
+                            <div class="small text-muted"><i class="fas fa-envelope me-1"></i> ${p.email}</div>
+                            <small><a href="https://wa.me/${p.kontak.replace(/\D/g, '')}" target="_blank" class="text-success text-decoration-none fw-bold"><i class="fab fa-whatsapp"></i> ${p.kontak}</a></small>
+                        </td>
+                        <td>${p.posisi}</td>
+                        <td><span class="badge ${p.status === 'Interview' ? 'bg-info' : p.status === 'Diterima' ? 'bg-success' : p.status === 'Ditolak' ? 'bg-danger' : 'bg-warning'}">${p.status}</span></td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="${p.cv_path}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-file-pdf"></i></a>
+                                <button onclick="aksiPelamar(${p.id}, 'Interview', '${p.nama}', '${p.kontak}')" class="btn btn-sm btn-info text-white"><i class="fas fa-comments"></i></button>
+                                <button onclick="aksiPelamar(${p.id}, 'Diterima', '${p.nama}', '${p.kontak}')" class="btn btn-sm btn-success"><i class="fas fa-check"></i></button>
+                                <button onclick="aksiPelamar(${p.id}, 'Ditolak', '${p.nama}', '${p.kontak}')" class="btn btn-sm btn-outline-danger"><i class="fas fa-times"></i></button>
+                                <button onclick="hapusPelamar(${p.id})" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`).join('');
+
+                    const resBio = await fetch('/api/biodata/all');
+                    const dataBio = await resBio.json();
+                    document.getElementById('list-biodata').innerHTML = dataBio.map(b => `
+                    <tr>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <button onclick="lihatBiodata(${b.id})" class="btn btn-sm btn-secondary text-white" title="Lihat Detail & Foto"><i class="fas fa-eye"></i></button>
+                                <button onclick="hapusBiodata(${b.id})" class="btn btn-sm btn-danger" title="Hapus Biodata"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                        <td class="text-nowrap">${b.nama_lengkap || b.pelamar_nama || '-'}</td>
+                        <td class="text-nowrap">${b.nik || '-'}</td>
+                        <td class="text-nowrap">${b.tempat_lahir || '-'}, ${b.tgl_lahir || '-'}</td>
+                        <td class="text-nowrap">${b.agama || '-'}</td>
+                        <td class="text-nowrap">${b.kewarganegaraan || '-'}</td>
+                        <td class="text-nowrap">${b.status_kawin || '-'}</td>
+                        <td class="text-nowrap">${b.no_telp || '-'}</td>
+                        <td><div style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${b.alamat_lengkap || '-'}">${b.alamat_lengkap || '-'}</div></td>
+                        <td class="text-nowrap">${b.pendidikan_terakhir || '-'}</td>
+                    </tr>`).join('');
+                }
+
+                const resR = await fetch('/api/rekap');
+                const dataR = await resR.json();
+                globalDataRekap = dataR;
+
+                const pendingO = dataR.riwayat.filter(x => x.status === 'Pending');
+                const bA = document.getElementById('badge-antrean');
+                if (bA) { bA.innerText = pendingO.length; pendingO.length > 0 ? bA.classList.remove('d-none') : bA.classList.add('d-none'); }
+
+                document.getElementById('list-antrean').innerHTML = pendingO.map(r => `
+                <div class="col-md-4">
+                    <div class="card p-3 shadow-sm card-order h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-primary">${r.metode}</span>
+                            <small class="text-muted">${r.waktu}</small>
+                        </div>
+                        <b class="d-block mt-1">${r.item_list}</b>
+                        <hr class="my-1">
+                        <p class="small mb-1 text-secondary">${r.alamat}</p>
+                        <h5 class="text-danger fw-bold">Rp${r.total_harga.toLocaleString()}</h5>
+                        ${r.bukti_pembayaran ? `<a href="${r.bukti_pembayaran}" target="_blank" class="btn btn-outline-info w-100 mb-2 btn-sm fw-bold"><i class="fas fa-eye me-1"></i> LIHAT BUKTI BAYAR</a>` : ''}
+                        <div class="d-flex gap-2">
+                            <button onclick="aksiOrder(${r.id}, 'Selesai')" class="btn btn-success btn-sm w-100">SELESAI</button>
+                            <button onclick="aksiOrder(${r.id}, 'Batalkan')" class="btn btn-outline-danger btn-sm w-100">BATAL</button>
+                        </div>
+                    </div>
+                </div>`).join('');
+
+                if (currentRole === 'admin') {
+                    const skrg = new Date().toISOString().split('T')[0];
+                    const bln = skrg.substring(0, 7);
+                    const filterH = dataR.riwayat.filter(r => r.status === 'Selesai' && r.waktu.startsWith(skrg));
+                    const filterB = dataR.riwayat.filter(r => r.status === 'Selesai' && r.waktu.startsWith(bln));
+                    const omzetH = filterH.reduce((s, r) => s + r.total_harga, 0);
+                    const omzetB = filterB.reduce((s, r) => s + r.total_harga, 0);
+
+                    document.getElementById('text-omzet').innerText = 'Rp ' + dataR.total.toLocaleString();
+                    document.getElementById('omzet-hari').innerText = 'Rp ' + omzetH.toLocaleString();
+                    document.getElementById('omzet-bulan').innerText = 'Rp ' + omzetB.toLocaleString();
+                    document.getElementById('dash-rekap-hari').innerHTML = `Selesai: <b>${filterH.length}</b><br>Total: <b>Rp ${omzetH.toLocaleString()}</b>`;
+                    document.getElementById('dash-rekap-bulan').innerHTML = `Selesai: <b>${filterB.length}</b><br>Total: <b>Rp ${omzetB.toLocaleString()}</b>`;
+                    updateChart(dataR.grafik);
+                }
+                document.getElementById('list-rekap').innerHTML = dataR.riwayat.filter(x => x.status !== 'Pending').map(r => `<tr><td>${r.waktu}</td><td>${r.item_list}</td><td><span class="badge ${r.status === 'Selesai' ? 'bg-success' : 'bg-danger'}">${r.status}</span></td><td>${r.bukti_pembayaran ? `<a href="${r.bukti_pembayaran}" target="_blank" class="btn btn-sm btn-info text-white"><i class="fas fa-eye"></i> Bukti</a>` : '-'}</td></tr>`).join('');
+            } catch (error) {
+                console.error("Gagal memuat data:", error);
+            }
+        }
+
+        // Fungsi-fungsi CRUD lainnya tetap sama
+        async function lihatBiodata(id) {
+            const res = await fetch(`/api/biodata/detail/${id}`);
+            const data = await res.json();
+            if (Object.keys(data).length === 0) {
+                alert('Pelamar ini belum melengkapi biodata.');
+                return;
+            }
+            document.getElementById('bio-nama_lengkap').innerText = data.nama_lengkap || '-';
+            document.getElementById('bio-tempat').innerText = data.tempat_lahir || '-';
+            document.getElementById('bio-agama').innerText = data.agama || '-';
+            document.getElementById('bio-kewarganegaraan').innerText = data.kewarganegaraan || '-';
+            document.getElementById('bio-status_kawin').innerText = data.status_kawin || '-';
+            document.getElementById('bio-no_telp').innerText = data.no_telp || '-';
+            document.getElementById('bio-nik').innerText = data.nik || '-';
+            document.getElementById('bio-alamat').innerText = data.alamat_lengkap || '-';
+            document.getElementById('bio-tgl').innerText = data.tgl_lahir || '-';
+            document.getElementById('bio-pendidikan').innerText = data.pendidikan_terakhir || '-';
+
+            document.getElementById('bio-ktp').innerHTML = data.foto_ktp ? `<img src="${data.foto_ktp}" class="img-fluid rounded mt-2">` : '<span class="text-muted">Tidak ada foto</span>';
+            document.getElementById('bio-wajah').innerHTML = data.foto_wajah ? `<img src="${data.foto_wajah}" class="img-fluid rounded mt-2">` : '<span class="text-muted">Tidak ada foto</span>';
+            document.getElementById('bio-ijazah').innerHTML = data.foto_ijazah ? (data.foto_ijazah.toLowerCase().endsWith('.pdf') ? `<a href="${data.foto_ijazah}" target="_blank" class="btn btn-outline-primary mt-2"><i class="fas fa-file-pdf"></i> Buka Dokumen Ijazah (PDF)</a>` : `<img src="${data.foto_ijazah}" class="img-fluid rounded mt-2">`) : '<span class="text-muted">Tidak ada dokumen</span>';
+
+            biodataModal.show();
+        }
+
+        async function aksiPelamar(id, stat, nama, kontak) {
+            await fetch('/api/pelamar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status: stat }) });
+            let clean = kontak.replace(/\D/g, '');
+            if (clean.startsWith('0')) clean = '62' + clean.slice(1);
+            let msg = stat === 'Interview' ? `Halo ${nama.toUpperCase()}, Kami mengundang Anda untuk tahap Interview di AFWEB CODE. Kapan Anda ada waktu luang?` : stat === 'Diterima' ? `Halo ${nama.toUpperCase()}, Selamat Anda diterima di AFWEB CODE! Mohon lengkapi biodata Anda di link: https://awaludinfadilah.gt.tc/isi-biodata?id=${id}` : `Halo ${nama.toUpperCase()}, Terima kasih telah melamar. Saat ini kami belum bisa melanjutkan proses lamaran Anda. Tetap semangat!`;
+            window.open(`https://wa.me/${clean}?text=${encodeURIComponent(msg)}`, '_blank');
+            loadData();
+        }
+        async function tambahBarang() {
+            const f = new FormData(); 
+            f.append('nama', document.getElementById('inp-nama').value); 
+            f.append('stok', document.getElementById('inp-stok').value); 
+            f.append('harga', document.getElementById('inp-harga').value); 
+            const files = document.getElementById('inp-foto').files;
+            for (let i = 0; i < files.length; i++) f.append('foto[]', files[i]);
+            await fetch('/api/barang', { method: 'POST', body: f }); loadData();
+        }
+        function openEditModal(i) { document.getElementById('edit-id').value = i.id; document.getElementById('edit-nama').value = i.nama; document.getElementById('edit-stok').value = i.stok; document.getElementById('edit-harga').value = i.harga; editModal.show(); }
+        async function simpanEdit() { const f = new FormData(document.getElementById('formEdit')); await fetch('/api/barang/update', { method: 'POST', body: f }); editModal.hide(); loadData(); }
+        async function hapusBarang(id) { if (confirm('Hapus?')) { await fetch(`/api/barang/delete/${id}`, { method: 'POST' }); loadData(); } }
+        async function loadUsers() {
+            const res = await fetch('/api/users'); const data = await res.json();
+            document.getElementById('list-users').innerHTML = data.map(u => `<tr><td>${u.username}</td><td><span class="badge bg-dark">${u.role}</span></td><td><div class="d-flex gap-1"><button onclick='openEditUserModal(${JSON.stringify(u)})' class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>${u.username !== 'admin' ? `<button onclick="hapusUser(${u.id})" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>` : ''}</div></td></tr>`).join('');
+        }
+        async function tambahUser() { const p = { username: document.getElementById('u-name').value, password: document.getElementById('u-pass').value, role: document.getElementById('u-role').value }; await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) }); loadUsers(); }
+        function openEditUserModal(u) { document.getElementById('edit-u-id').value = u.id; document.getElementById('edit-u-name').value = u.username; document.getElementById('edit-u-role').value = u.role; userEditModal.show(); }
+        async function simpanEditUser() { const p = { id: document.getElementById('edit-u-id').value, username: document.getElementById('edit-u-name').value, password: document.getElementById('edit-u-pass').value, role: document.getElementById('edit-u-role').value }; await fetch('/api/users/update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) }); userEditModal.hide(); loadUsers(); }
+        async function hapusUser(id) { if (confirm('Hapus?')) { await fetch(`/api/users/delete/${id}`, { method: 'POST' }); loadUsers(); } }
+        async function aksiOrder(id, act) { await fetch('/api/order/action', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action: act }) }); loadData(); }
+        async function hapusPelamar(id) { if (confirm('Hapus pelamar?')) { await fetch(`/api/pelamar/delete/${id}`, { method: 'POST' }); loadData(); } }
+        async function hapusBiodata(id) { if (confirm('Apakah yakin akan menghapus data ini?')) { await fetch(`/api/biodata/delete/${id}`, { method: 'POST' }); loadData(); } }
+        function updateChart(data) { const ctx = document.getElementById('incomeChart'); if (!ctx) return; if (chart) chart.destroy(); chart = new Chart(ctx, { type: 'line', data: { labels: data.map(g => g.tgl), datasets: [{ label: 'Omzet', data: data.map(g => g.total), borderColor: '#00468b', tension: 0.3 }] } }); }
+        async function loadPaySettings() { const res = await fetch('/api/settings/pembayaran'); const data = await res.json(); document.getElementById('set-rekening').value = data.rekening || ''; document.getElementById('set-diskon').value = data.diskon || 0; document.getElementById('set-banner-aktif').value = data.banner_aktif || 0; document.getElementById('set-banner-text').value = data.banner_text || ''; if (data.qris_path) document.getElementById('qris-preview-container').innerHTML = `<img src="${data.qris_path}" width="120" class="img-thumbnail">`; }
+        async function simpanPaySettings() { const f = new FormData(); f.append('rekening', document.getElementById('set-rekening').value); f.append('diskon', document.getElementById('set-diskon').value); f.append('banner_aktif', document.getElementById('set-banner-aktif').value); f.append('banner_text', document.getElementById('set-banner-text').value); const q = document.getElementById('set-qris').files[0]; if (q) f.append('qris', q); await fetch('/api/settings/pembayaran', { method: 'POST', body: f }); loadPaySettings(); alert('Pengaturan toko berhasil disimpan!'); }
+        async function cleanApp() {
+            if (!confirm('PERINGATAN: Anda yakin ingin menghapus data yang dipilih? Data yang dihapus tidak dapat dikembalikan!')) return;
+            const payload = {
+                pesanan: document.getElementById('clean-pesanan').checked,
+                pelamar: document.getElementById('clean-pelamar').checked,
+                barang: document.getElementById('clean-barang').checked
+            };
+            try {
+                const res = await fetch('/api/clean', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const data = await res.json();
+                if (data.status === 'success') { alert(data.message); loadData(); }
+            } catch (e) { alert('Gagal membersihkan data.'); }
+        }
+        function tampilkanRekap(tipe) {
+            const area = document.getElementById('rekap-display-area'); area.classList.remove('d-none');
+            const title = document.getElementById('rekap-title'); const body = document.getElementById('rekap-body');
+            const skrg = new Date().toISOString().split('T')[0];
+            let html = "";
+            if (tipe === 'hari') {
+                title.innerText = "Rekap Harian (" + skrg + ")";
+                const f = globalDataRekap.riwayat.filter(r => r.status === 'Selesai' && r.waktu.startsWith(skrg));
+                html = `<h4 class="text-success text-center">Rp ${f.reduce((s, r) => s + r.total_harga, 0).toLocaleString()}</h4><p class="text-center">Total ${f.length} Transaksi</p>`;
+            } else if (tipe === 'bulan') {
+                const bln = skrg.substring(0, 7); title.innerText = "Rekap Bulanan (" + bln + ")";
+                const f = globalDataRekap.riwayat.filter(r => r.status === 'Selesai' && r.waktu.startsWith(bln));
+                html = `<h4 class="text-info text-center">Rp ${f.reduce((s, r) => s + r.total_harga, 0).toLocaleString()}</h4><p class="text-center">Total ${f.length} Transaksi</p>`;
+            } else {
+                title.innerText = "Rekap Inventaris";
+                const aset = globalDataBarang.reduce((sum, i) => sum + (i.harga * i.stok), 0);
+                html = `<p>Total Barang: ${globalDataBarang.length} Jenis</p><h4 class="text-warning text-center">Aset: Rp ${aset.toLocaleString()}</h4>`;
+            }
+            body.innerHTML = html; area.scrollIntoView({ behavior: 'smooth' });
+        }
+        // Refresh data setiap 15 detik
+        setInterval(loadData, 15000);
+    </script>
+</body>
+
+</html>
